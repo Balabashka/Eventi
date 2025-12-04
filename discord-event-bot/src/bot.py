@@ -25,6 +25,8 @@ async def on_ready():
 
 async def setup_bot():
     await bot.load_extension("cogs.events")
+    await bot.load_extension("cogs.dkp")
+
 
 
 if __name__ == "__main__":
