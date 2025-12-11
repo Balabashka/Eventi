@@ -45,7 +45,12 @@ def init_db() -> None:
     conn.close()
 
 
-def _change_dkp(server_id: int, user_id: int, delta: int, reason: Optional[str]) -> int:
+def _change_dkp(
+    server_id: int,
+    user_id: int,
+    delta: int,
+    reason: Optional[str],
+) -> int:
     """Internal helper: apply a delta and return new total."""
     conn = get_connection()
     cur = conn.cursor()
@@ -87,12 +92,22 @@ def _change_dkp(server_id: int, user_id: int, delta: int, reason: Optional[str])
     return int(row["points"]) if row else 0
 
 
-def add_dkp(server_id: int, user_id: int, amount: int, reason: Optional[str] = None) -> int:
+def add_dkp(
+    server_id: int,
+    user_id: int,
+    amount: int,
+    reason: Optional[str] = None,
+) -> int:
     """Add DKP to a user and return new total."""
     return _change_dkp(server_id, user_id, abs(amount), reason)
 
 
-def remove_dkp(server_id: int, user_id: int, amount: int, reason: Optional[str] = None) -> int:
+def remove_dkp(
+    server_id: int,
+    user_id: int,
+    amount: int,
+    reason: Optional[str] = None,
+) -> int:
     """Remove DKP from a user and return new total."""
     return _change_dkp(server_id, user_id, -abs(amount), reason)
 

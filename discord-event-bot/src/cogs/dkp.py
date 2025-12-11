@@ -3,7 +3,13 @@ from typing import Optional
 import discord
 from discord.ext import commands
 
-from db.dkp_db import init_db, add_dkp, remove_dkp, get_dkp, get_leaderboard
+from db.dkp_db import (
+    init_db,
+    add_dkp,
+    remove_dkp,
+    get_dkp,
+    get_leaderboard,
+)
 
 
 class DKPCog(commands.Cog):
@@ -12,6 +18,7 @@ class DKPCog(commands.Cog):
         init_db()
 
     @commands.command(name="dkp_add")
+    @commands.has_permissions(manage_guild=True)
     async def dkp_add(
         self,
         ctx: commands.Context,
@@ -19,21 +26,25 @@ class DKPCog(commands.Cog):
         amount: int,
         *reason: str,
     ):
+        """Add DKP to a user."""
         if amount <= 0:
             await ctx.send("Amount must be a positive number.")
             return
 
         reason_text = " ".join(reason) if reason else None
-
         new_total = add_dkp(ctx.guild.id, member.id, amount, reason_text)
 
-        msg = f"Added **{amount} DKP** to {member.mention}. New total: **{new_total}**."
+        msg = (
+            f"Added **{amount} DKP** to {member.mention}. "
+            f"New total: **{new_total}**."
+        )
         if reason_text:
             msg += f"\nReason: {reason_text}"
 
         await ctx.send(msg)
 
     @commands.command(name="dkp_remove")
+    @commands.has_permissions(manage_guild=True)
     async def dkp_remove(
         self,
         ctx: commands.Context,
@@ -41,15 +52,18 @@ class DKPCog(commands.Cog):
         amount: int,
         *reason: str,
     ):
+        """Remove DKP from a user."""
         if amount <= 0:
             await ctx.send("Amount must be a positive number.")
             return
 
         reason_text = " ".join(reason) if reason else None
-
         new_total = remove_dkp(ctx.guild.id, member.id, amount, reason_text)
 
-        msg = f"Removed **{amount} DKP** from {member.mention}. New total: **{new_total}**."
+        msg = (
+            f"Removed **{amount} DKP** from {member.mention}. "
+            f"New total: **{new_total}**."
+        )
         if reason_text:
             msg += f"\nReason: {reason_text}"
 
@@ -89,8 +103,20 @@ class DKPCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @dkp_add.error
+    @dkp_remove.error
+    async def dkp_perm_error(
+        self,
+        ctx: commands.Context,
+        error: commands.CommandError,
+    ):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(
+                "You need **Manage Server** permissions to use this command."
+            )
+        else:
+            raise error
 
-# 🔴 THIS is the function discord.py is complaining about.
-# It must exist at top level, not inside the class, exactly named `setup`.
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(DKPCog(bot))
